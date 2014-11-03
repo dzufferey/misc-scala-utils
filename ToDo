@@ -1,0 +1,9 @@
+Logger
+------
+
+either 
+    make it elidable using annotation (http://www.scala-lang.org/api/current/index.html#scala.annotation.elidable)
+or 
+    use macro so that is can be omited at compile time using macro settings (http://www.scala-lang.org/api/2.11.1/scala-reflect/index.html#scala.reflect.macros.Infrastructure)
+    macro can also allow more flexibility in the syntax ...
+
