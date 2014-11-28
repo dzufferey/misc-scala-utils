@@ -7,22 +7,26 @@ class Namer {
   private val map = new java.util.concurrent.ConcurrentHashMap[String, java.util.concurrent.atomic.AtomicInteger]()
 
   private def counter = new java.util.concurrent.atomic.AtomicInteger()
+  
+  def getPrefixAndVersion(prefix: String) = {
+    val idx = prefix.lastIndexOf("$")
+    if (idx == -1) {
+      (prefix, 0)
+    } else {
+      try {
+        (prefix.substring(0, idx), prefix.substring(idx+1).toInt)
+      } catch {
+        case e: java.lang.NumberFormatException =>
+          (prefix, 0)
+      }
+    }
+  }
 
   private def extractPrefix(prefix: String, preserve: Boolean) = {
     if (preserve) {
       (prefix, 0)
     } else {
-      val idx = prefix.lastIndexOf("$")
-      if (idx == -1) {
-        (prefix, 0)
-      } else {
-        try {
-          (prefix.substring(0, idx), prefix.substring(idx+1).toInt)
-        } catch {
-          case e: java.lang.NumberFormatException =>
-            (prefix, 0)
-        }
-      }
+      getPrefixAndVersion(prefix)
     }
   }
 
