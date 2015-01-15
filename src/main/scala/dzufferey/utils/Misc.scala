@@ -53,6 +53,12 @@ object Misc {
 
   def toInt(str: String): Option[Int] = safeCall((x: String) => x.toInt, str)
 
+  def toLong(str: String): Option[Long] = safeCall((x: String) => x.toLong, str)
+
+  def toFloat(str: String): Option[Float] = safeCall((x: String) => x.toFloat, str)
+
+  def toDouble(str: String): Option[Double] = safeCall((x: String) => x.toDouble, str)
+
   def allSubLists[A](lst: Seq[A]): Seq[Seq[A]] = lst.headOption match {
     case Some(e) =>
       var sub = allSubLists(lst.tail)
