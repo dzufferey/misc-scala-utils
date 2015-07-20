@@ -82,39 +82,13 @@ object Logger {
    * @param content The content of the message (evaluated only if needed).
    */
   def apply(relatedTo: String, lvl: Level, content: String): Unit = macro LoggerMacros.string
-//synchronized {
-//  if (apply(relatedTo, lvl)) {
-//    //when content is on multiple lines, each line should be prefixed.
-//    val prefix = "[" + lvl.color + lvl.message + Console.RESET + "]" + " @ " + relatedTo + ": " 
-//    val indented = Misc.indent(prefix, content)
-//    Console.println(indented)
-//  }
-//}
   
   def apply(relatedTo: String, lvl: Level, content: java.io.BufferedWriter => Unit): Unit = macro LoggerMacros.writer
-//synchronized {
-//  if (apply(relatedTo, lvl)) {
-//    //when content is on multiple lines, each line should be prefixed.
-//    val prefix = "[" + lvl.color + lvl.message + Console.RESET + "]" + " @ " + relatedTo + ": " 
-//    val writer = new java.io.BufferedWriter(new PrefixingWriter(prefix, Console.out))
-//    content(writer)
-//    writer.flush
-//  }
-//}
 
   /** Log a message and throw an exception with the content. */
   def logAndThrow(relatedTo: String, lvl: Level, content: String): Nothing = macro LoggerMacros.logAndThrow
-//{
-//  apply(relatedTo, lvl, content)
-//  Console.flush
-//  sys.error(content)
-//}
 
   def assert(cond: Boolean, relatedTo: String, content: String): Unit = macro LoggerMacros.assert
-//{
-//  if (!cond)
-//    logAndThrow(relatedTo, Error, content)
-//}
 
 }
 
@@ -127,7 +101,7 @@ class LoggerMacros(val c: Context) {
     val tree = if (isEnabled) {
         q"""
         if (dzufferey.utils.Logger($relatedTo, $lvl)) {
-          val prefix = "[" + $lvl.color + $lvl.message + Console.RESET + "]" + " @ " + $relatedTo + ": " 
+          val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": " 
           val indented = dzufferey.utils.Misc.indent(prefix, $content)
           dzufferey.utils.Logger.lock.lock
           try {
@@ -145,7 +119,7 @@ class LoggerMacros(val c: Context) {
     val tree = if (isEnabled) {
         q"""
         if (dzufferey.utils.Logger($relatedTo, $lvl)) {
-          val prefix = "[" + $lvl.color + $lvl.message + Console.RESET + "]" + " @ " + $relatedTo + ": " 
+          val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": " 
           val writer = new java.io.BufferedWriter(new PrefixingWriter(prefix, Console.out))
           dzufferey.utils.Logger.lock.lock
           try {
