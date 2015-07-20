@@ -6,21 +6,6 @@ import LogLevel._
 /** executing command as children process */
 object SysCmd {
 
-  private val limiter: java.util.concurrent.Semaphore = {
-    //if (Config.maxChildren >= 0)
-    //  new java.util.concurrent.Semaphore(Config.maxChildren, true)
-    //else
-      null
-  }
-
-  def acquire {
-    if (limiter != null) limiter.acquire
-  }
-  
-  def release {
-    if (limiter != null) limiter.release
-  }
-
   type ExecResult = (Int, String, String)
   
   //TODO add an option for timeout
@@ -38,14 +23,9 @@ object SysCmd {
         line => {bufferOut append line; bufferOut append "\n"},
         line => {bufferErr append line; bufferErr append "\n"}
       )
-    Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
-    try {
-      acquire
-      val exitCode = withInput ! processLogger
-      (exitCode, bufferOut.toString, bufferErr.toString)
-    } finally {
-      release
-    }
+    //Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
+    val exitCode = withInput ! processLogger
+    (exitCode, bufferOut.toString, bufferErr.toString)
   }
   
   def apply(cmds: Array[String], input: String, addToEnv: (String,String)*): ExecResult =
@@ -61,34 +41,24 @@ object SysCmd {
       case Some(str) => process #< ( new java.io.ByteArrayInputStream(str.getBytes) )
       case None => process
     }
-    Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
-    try {
-      acquire
-      withInput.! 
-    } finally {
-      release
-    }
+    //Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
+    withInput.! 
   }
   
-  def execRedirectToLogger(cmds: Array[String], input: Option[String], prefix: String, lvl: Level, addToEnv: (String,String)*): Int = {
+  def execRedirectToOutput(cmds: Array[String], input: Option[String], addToEnv: (String,String)*): Int = {
     val process = Process(cmds, None, addToEnv:_*)
     val withInput = input match {
       case Some(str) => process #< ( new java.io.ByteArrayInputStream(str.getBytes) )
       case None => process
     }
     val processLogger = ProcessLogger(
-      out => Logger(prefix, lvl, out),
-      err => Logger(prefix, Warning, err))
-    Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
-    try {
-      acquire
-      withInput ! processLogger
-    } finally {
-      release
-    }
+      out => Console.println(out),
+      err => Console.err.println(err))
+    //Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
+    withInput ! processLogger
   }
   
-  def execOutputAndLog(cmds: Array[String], input: Option[String], prefix: String, lvl: Level, addToEnv: (String,String)*): ExecResult = {
+  def execOutputAndLog(cmds: Array[String], input: Option[String], addToEnv: (String,String)*): ExecResult = {
     val process = Process(cmds, None, addToEnv:_*)
     val withInput = input match {
       case Some(str) => process #< ( new java.io.ByteArrayInputStream(str.getBytes) )
@@ -99,17 +69,12 @@ object SysCmd {
     val bufferErr = new StringBuilder()
     val processLogger =
       ProcessLogger(
-        line => {Logger(prefix, lvl, line); bufferOut append line; bufferOut append "\n"},
-        line => {Logger(prefix, Warning, line); bufferErr append line; bufferErr append "\n"}
+        line => { Console.println(line); bufferOut append line; bufferOut append "\n"},
+        line => { Console.err.println(line); bufferErr append line; bufferErr append "\n"}
       )
-    Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
-    try {
-      acquire
-      val exitCode = withInput ! processLogger
-      (exitCode, bufferOut.toString, bufferErr.toString)
-    } finally {
-      release
-    }
+    //Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
+    val exitCode = withInput ! processLogger
+    (exitCode, bufferOut.toString, bufferErr.toString)
   }
 
 }

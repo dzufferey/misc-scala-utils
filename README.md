@@ -25,3 +25,11 @@ libraryDependencies += "io.github.dzufferey" %% "misc-scala-utils" % "0.1-SNAPSH
 
 The last line is requried if you want to use it in some other project.
 If you want to use it locally do not add the `resolvers` line but instead run `sbt publishLocal`.
+
+## Disabling Logger at compile time
+
+The Logger uses macro to avoid creating strings (or call-by-name closures).
+If this is not enough (benchmarking), you can even remove them by setting the right option:
+
+Run sbt using `sbt -DdisableLogging=true` and then recompile your project.
+The logging should be gone.

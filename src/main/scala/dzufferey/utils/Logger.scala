@@ -1,5 +1,8 @@
 package dzufferey.utils
 
+import scala.language.experimental.macros
+import scala.reflect.macros.blackbox.Context
+
 //logging facility (i.e. syslog alike)
 
 object LogLevel {
@@ -16,14 +19,14 @@ object LogLevel {
     case object Debug    extends Level("Debug",    1,  Console.RESET)
 }
 
-//TODO one logger for all or separated logger ? (Console, file, network, ...)
-
+import LogLevel._
+  
 /** Simple logger that outputs to stdout. */
-class Logger {
+object Logger {
 
-  import LogLevel._
 
-  private var assertive = true
+  val lock = new java.util.concurrent.locks.ReentrantLock
+
   private var minPriority = Notice.priority
   val disallowed = scala.collection.mutable.HashSet.empty[String]
 
@@ -44,9 +47,6 @@ class Logger {
   def setMinPriority(lvl: Int) = minPriority = lvl
   def disallow(str: String) = disallowed += str
   def allow(str: String) = disallowed -= str
-
-  def disableAssert = assertive = false
-  def enableAssert = assertive = true
 
   private def increaseLevel(l: Level): Level = l match {
     case Critical => Error
@@ -81,39 +81,112 @@ class Logger {
    * @param lvl The priority of the message.
    * @param content The content of the message (evaluated only if needed).
    */
-  def apply(relatedTo: String, lvl: Level, content: => String): Unit = synchronized {
-    if (apply(relatedTo, lvl)) {
-      //when content is on multiple lines, each line should be prefixed.
-      val prefix = "[" + lvl.color + lvl.message + Console.RESET + "]" + " @ " + relatedTo + ": " 
-      val indented = Misc.indent(prefix, content)
-      Console.println(indented)
-    }
-  }
+  def apply(relatedTo: String, lvl: Level, content: String): Unit = macro LoggerMacros.string
+//synchronized {
+//  if (apply(relatedTo, lvl)) {
+//    //when content is on multiple lines, each line should be prefixed.
+//    val prefix = "[" + lvl.color + lvl.message + Console.RESET + "]" + " @ " + relatedTo + ": " 
+//    val indented = Misc.indent(prefix, content)
+//    Console.println(indented)
+//  }
+//}
   
-  def apply(relatedTo: String, lvl: Level, content: java.io.BufferedWriter => Unit): Unit = synchronized {
-    if (apply(relatedTo, lvl)) {
-      //when content is on multiple lines, each line should be prefixed.
-      val prefix = "[" + lvl.color + lvl.message + Console.RESET + "]" + " @ " + relatedTo + ": " 
-      val writer = new java.io.BufferedWriter(new PrefixingWriter(prefix, Console.out))
-      content(writer)
-      writer.flush
-    }
-  }
+  def apply(relatedTo: String, lvl: Level, content: java.io.BufferedWriter => Unit): Unit = macro LoggerMacros.writer
+//synchronized {
+//  if (apply(relatedTo, lvl)) {
+//    //when content is on multiple lines, each line should be prefixed.
+//    val prefix = "[" + lvl.color + lvl.message + Console.RESET + "]" + " @ " + relatedTo + ": " 
+//    val writer = new java.io.BufferedWriter(new PrefixingWriter(prefix, Console.out))
+//    content(writer)
+//    writer.flush
+//  }
+//}
 
   /** Log a message and throw an exception with the content. */
-  def logAndThrow(relatedTo: String, lvl: Level, content: => String): Nothing = {
-    apply(relatedTo, lvl, content)
-    Console.flush
-    sys.error(content)
-  }
+  def logAndThrow(relatedTo: String, lvl: Level, content: String): Nothing = macro LoggerMacros.logAndThrow
+//{
+//  apply(relatedTo, lvl, content)
+//  Console.flush
+//  sys.error(content)
+//}
 
-  def assert(cond: => Boolean, relatedTo: String, content: => String) {
-    if (assertive)
-      if (!cond)
-        logAndThrow(relatedTo, Error, content)
-  }
+  def assert(cond: Boolean, relatedTo: String, content: String): Unit = macro LoggerMacros.assert
+//{
+//  if (!cond)
+//    logAndThrow(relatedTo, Error, content)
+//}
 
 }
 
-object Logger extends Logger {
+class LoggerMacros(val c: Context) {
+  import c.universe._
+
+  val isEnabled = System.getProperty("disableLogging") != "true"
+
+  def string(relatedTo: c.Expr[String], lvl: c.Expr[Level], content: c.Expr[String]): c.Expr[Unit] = {
+    val tree = if (isEnabled) {
+        q"""
+        if (dzufferey.utils.Logger($relatedTo, $lvl)) {
+          val prefix = "[" + $lvl.color + $lvl.message + Console.RESET + "]" + " @ " + $relatedTo + ": " 
+          val indented = dzufferey.utils.Misc.indent(prefix, $content)
+          dzufferey.utils.Logger.lock.lock
+          try {
+            Console.println(indented)
+          } finally {
+            dzufferey.utils.Logger.lock.unlock
+          }
+        }
+        """
+      } else q"()"
+    c.Expr[Unit](tree)
+  }
+
+  def writer(relatedTo: c.Expr[String], lvl: c.Expr[Level], content: c.Expr[java.io.BufferedWriter => Unit]): c.Expr[Unit] = {
+    val tree = if (isEnabled) {
+        q"""
+        if (dzufferey.utils.Logger($relatedTo, $lvl)) {
+          val prefix = "[" + $lvl.color + $lvl.message + Console.RESET + "]" + " @ " + $relatedTo + ": " 
+          val writer = new java.io.BufferedWriter(new PrefixingWriter(prefix, Console.out))
+          dzufferey.utils.Logger.lock.lock
+          try {
+            content(writer)
+            writer.flush
+          } finally {
+            dzufferey.utils.Logger.lock.unlock
+          }
+        }
+        """
+      } else q"()"
+    c.Expr[Unit](tree)
+  }
+
+  def logAndThrow(relatedTo: c.Expr[String], lvl: c.Expr[Level], content: c.Expr[String]): c.Expr[Nothing] = {
+    val tree = if (isEnabled) {
+        q"""
+        {
+          val c = $content
+          dzufferey.utils.Logger($relatedTo, $lvl, c)
+          Console.flush
+          sys.error(c)
+        }
+        """
+      } else {
+        q"""
+        sys.error($content)
+        """
+      }
+    c.Expr[Nothing](tree)
+  }
+
+  def assert(cond: c.Expr[Boolean], relatedTo: c.Expr[String], content: c.Expr[String]): c.Expr[Unit] = {
+    val tree = if (isEnabled) {
+        q"""
+        if (!$cond) {
+          dzufferey.utils.Logger.logAndThrow($relatedTo, dzufferey.utils.LogLevel.Error, $content)
+        }
+        """
+      } else q"()"
+    c.Expr[Unit](tree)
+  }
+
 }

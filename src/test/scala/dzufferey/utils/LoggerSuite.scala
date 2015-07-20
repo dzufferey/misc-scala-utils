@@ -7,44 +7,41 @@ import LogLevel._
 class LoggerSuite extends FunSuite {
      
   test("lazy evaluation of message with priority") {
-    val logger = new Logger
-    logger.setMinPriority(Debug)
+    Logger.setMinPriority(Debug)
     intercept[java.lang.RuntimeException] {
-      logger("LoggerSuite", Debug, sys.error("should happen"): String)
+      Logger("LoggerSuite", Debug, sys.error("should happen"): String)
     }
-    logger.setMinPriority(Critical)
-    logger("LoggerSuite", Error, sys.error("should not happen"): String)
-    logger.reset
+    Logger.setMinPriority(Critical)
+    Logger("LoggerSuite", Error, sys.error("should not happen"): String)
+    Logger.reset
     intercept[java.lang.RuntimeException] {
-      logger("LoggerSuite", Error, sys.error("should happen"): String)
+      Logger("LoggerSuite", Error, sys.error("should happen"): String)
     }
   }
 
   test("lazy evaluation of message with disallow && allow message") {
-    val logger = new Logger
     intercept[java.lang.RuntimeException] {
-      logger("LoggerSuite", Notice, sys.error("should happen"): String)
+      Logger("LoggerSuite", Notice, sys.error("should happen"): String)
     }
-    logger.disallow("LoggerSuite2")
+    Logger.disallow("LoggerSuite2")
     intercept[java.lang.RuntimeException] {
-      logger("LoggerSuite", Notice, sys.error("should happen"): String)
+      Logger("LoggerSuite", Notice, sys.error("should happen"): String)
     }
-    logger.disallow("LoggerSuite")
-    logger("LoggerSuite", Info, sys.error("should not happen"): String)
-    logger.allow("LoggerSuite")
+    Logger.disallow("LoggerSuite")
+    Logger("LoggerSuite", Info, sys.error("should not happen"): String)
+    Logger.allow("LoggerSuite")
     intercept[java.lang.RuntimeException] {
-      logger("LoggerSuite", Notice, sys.error("should happen"): String)
+      Logger("LoggerSuite", Notice, sys.error("should happen"): String)
     }
-    logger.reset
+    Logger.reset
     intercept[java.lang.RuntimeException] {
-      logger("LoggerSuite2", Notice, sys.error("should happen"): String)
+      Logger("LoggerSuite2", Notice, sys.error("should happen"): String)
     }
   }
 
   test("logAndThrow") {
-    val logger = new Logger
     intercept[java.lang.RuntimeException] {
-      logger.logAndThrow("LoggerSuite", Notice, "should throw an exception")
+      Logger.logAndThrow("LoggerSuite", Notice, "should throw an exception")
     }
   }
 

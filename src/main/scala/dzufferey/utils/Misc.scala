@@ -9,7 +9,7 @@ object Misc {
     if (code == 0) {
       out
     } else {
-      Logger("basic", Warning, "error running dot (code: "+code+").")
+      //Logger("basic", Warning, "error running dot (code: "+code+").")
       "<pre>\n" + dot + "\n</pre>"
     }
   }
@@ -19,7 +19,7 @@ object Misc {
     if (code == 0) {
       out
     } else {
-      Logger("basic", Warning, "error running fdp (code: "+code+").")
+      //Logger("basic", Warning, "error running fdp (code: "+code+").")
       "<pre>\n" + dot + "\n</pre>"
     }
   }
