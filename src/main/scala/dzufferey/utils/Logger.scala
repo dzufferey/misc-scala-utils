@@ -105,7 +105,7 @@ class LoggerMacros(val c: Context) {
           val indented = dzufferey.utils.Misc.indent(prefix, $content)
           dzufferey.utils.Logger.lock.lock
           try {
-            Console.println(indented)
+            scala.Console.println(indented)
           } finally {
             dzufferey.utils.Logger.lock.unlock
           }
@@ -120,7 +120,7 @@ class LoggerMacros(val c: Context) {
         q"""
         if (dzufferey.utils.Logger($relatedTo, $lvl)) {
           val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": " 
-          val writer = new java.io.BufferedWriter(new PrefixingWriter(prefix, Console.out))
+          val writer = new java.io.BufferedWriter(new PrefixingWriter(prefix, scala.Console.out))
           dzufferey.utils.Logger.lock.lock
           try {
             content(writer)
@@ -140,7 +140,7 @@ class LoggerMacros(val c: Context) {
         {
           val c = $content
           dzufferey.utils.Logger($relatedTo, $lvl, c)
-          Console.flush
+          scala.Console.flush
           sys.error(c)
         }
         """
