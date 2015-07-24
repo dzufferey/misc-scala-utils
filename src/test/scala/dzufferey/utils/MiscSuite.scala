@@ -44,4 +44,18 @@ class MiscSuite extends FunSuite {
     assert(r1 contains List(2,2,2))
   }
 
+  test("cartesianProductIterator") {
+    val tmp = Vector(1,2)
+    val t1 = Vector(tmp,tmp,tmp)
+    val r1 = cartesianProductIterator(t1)
+    assert(r1.hasNext && r1.next == Vector(1,1,1))
+    assert(r1.hasNext && r1.next == Vector(2,1,1))
+    assert(r1.hasNext && r1.next == Vector(1,2,1))
+    assert(r1.hasNext && r1.next == Vector(2,2,1))
+    assert(r1.hasNext && r1.next == Vector(1,1,2))
+    assert(r1.hasNext && r1.next == Vector(2,1,2))
+    assert(r1.hasNext && r1.next == Vector(1,2,2))
+    assert(r1.hasNext && r1.next == Vector(2,2,2))
+    assert(!r1.hasNext)
+  }
 }

@@ -74,6 +74,53 @@ object Misc {
     case None => Seq(lst -> lst)
   }
 
+  //TODO an iterator version (avoid creating large collections)
+  def cartesianProductIterator[A](domains: IndexedSeq[IndexedSeq[A]]): Iterator[Vector[A]] = new Iterator[Vector[A]] {
+    protected val s = domains.size
+    protected val indices = Array.fill(s)(0)
+
+    protected def increment {
+      var carry = true
+      var i = 0
+      while (carry && i < s) {
+        val v = indices(i) + 1
+        if (v >= domains(i).size) {
+          indices(i) = 0
+        } else {
+          indices(i) = v
+          carry = false
+        }
+        i += 1
+      }
+      if (carry) {
+        indices(s-1) = domains(s-1).size
+      }
+    }
+
+    def hasNext: Boolean = {
+      var i = 0
+      while (i < s) {
+        if (indices(i) >= domains(i).size) return false
+        i += 1
+      }
+      true
+    }
+
+    def next = {
+      val builder = Vector.newBuilder[A]
+      builder.sizeHint(s)
+      var i = 0
+      while (i < s) {
+        builder += domains(i)(indices(i))
+        i += 1
+      }
+      increment
+      builder.result
+    }
+
+  }
+
+
   //Cartesian product from many dimensions, but with homogeneous type.
   def cartesianProduct[A](domains: Iterable[Iterable[A]]): Iterable[Seq[A]] = domains.headOption match {
     case Some(lst) => for (xs <- cartesianProduct(domains.tail); x <- lst) yield x +: xs
