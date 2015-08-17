@@ -74,7 +74,7 @@ object Misc {
     case None => Seq(lst -> lst)
   }
 
-  //TODO an iterator version (avoid creating large collections)
+  //an iterator version (avoid creating large collections)
   def cartesianProductIterator[A](domains: IndexedSeq[IndexedSeq[A]]): Iterator[Vector[A]] = new Iterator[Vector[A]] {
     protected val s = domains.size
     protected val indices = Array.fill(s)(0)
@@ -103,7 +103,7 @@ object Misc {
         if (indices(i) >= domains(i).size) return false
         i += 1
       }
-      true
+      s > 0
     }
 
     def next = {

@@ -58,4 +58,10 @@ class MiscSuite extends FunSuite {
     assert(r1.hasNext && r1.next == Vector(2,2,2))
     assert(!r1.hasNext)
   }
+  
+  test("cartesianProductIterator empty") {
+    val t1 = Vector()
+    val r1 = cartesianProductIterator(t1)
+    assert(!r1.hasNext)
+  }
 }
