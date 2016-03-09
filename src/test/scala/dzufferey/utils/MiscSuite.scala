@@ -60,7 +60,7 @@ class MiscSuite extends FunSuite {
   }
   
   test("cartesianProductIterator empty") {
-    val t1 = Vector()
+    val t1 = Vector[Vector[Int]]()
     val r1 = cartesianProductIterator(t1)
     assert(!r1.hasNext)
   }

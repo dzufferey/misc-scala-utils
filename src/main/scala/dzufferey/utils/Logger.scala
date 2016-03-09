@@ -123,7 +123,7 @@ class LoggerMacros(val c: Context) {
           val writer = new java.io.BufferedWriter(new PrefixingWriter(prefix, scala.Console.out))
           dzufferey.utils.Logger.lock.lock
           try {
-            content(writer)
+            $content(writer)
             writer.flush
           } finally {
             dzufferey.utils.Logger.lock.unlock
