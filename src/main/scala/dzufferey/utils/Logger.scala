@@ -120,7 +120,7 @@ class LoggerMacros(val c: Context) {
         q"""
         if (dzufferey.utils.Logger($relatedTo, $lvl)) {
           val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": " 
-          val writer = new java.io.BufferedWriter(new PrefixingWriter(prefix, scala.Console.out))
+          val writer = new java.io.BufferedWriter(new dzufferey.utils.PrefixingWriter(prefix, scala.Console.out))
           dzufferey.utils.Logger.lock.lock
           try {
             $content(writer)
