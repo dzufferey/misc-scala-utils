@@ -36,7 +36,7 @@ class Namer {
     if (c2 == null) c1 else c2
   }
 
-  def warmup(prefix: String, preserve: Boolean = false) {
+  def warmup(prefix: String, preserve: Boolean = false): Unit = {
     val (realPrefix, current) = extractPrefix(prefix, preserve)
     val c3 = getCounter(realPrefix)
     var c = c3.get

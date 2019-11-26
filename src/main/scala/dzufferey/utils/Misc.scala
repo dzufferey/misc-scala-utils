@@ -79,7 +79,7 @@ object Misc {
     protected val s = domains.size
     protected val indices = Array.fill(s)(0)
 
-    protected def increment {
+    protected def increment: Unit = {
       var carry = true
       var i = 0
       while (carry && i < s) {

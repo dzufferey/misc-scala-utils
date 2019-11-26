@@ -33,7 +33,7 @@ class MiscSuite extends FunSuite {
     val tmp = List(1,2)
     val t1 = List(tmp,tmp,tmp)
     val r1 = cartesianProduct(t1).toSeq
-    assert(r1.size == 8, t1 + " -> " + r1)
+    assert(r1.size == 8, s"$t1 -> $r1")
     assert(r1 contains List(1,1,1))
     assert(r1 contains List(1,1,2))
     assert(r1 contains List(1,2,1))

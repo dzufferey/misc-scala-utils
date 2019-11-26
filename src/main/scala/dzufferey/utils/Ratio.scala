@@ -24,8 +24,8 @@ object Ratio {
 
 object RatioImplicits {
   import scala.language.implicitConversions
-  implicit def i2r(i: Int): Ratio = new Ratio(i, 1l)
-  implicit def l2r(l: Long): Ratio = new Ratio(l, 1l)
+  implicit def i2r(i: Int): Ratio = new Ratio(i, 1L)
+  implicit def l2r(l: Long): Ratio = new Ratio(l, 1L)
 }
 
 //TODO those operations are prone to overflow
@@ -36,7 +36,7 @@ class Ratio(_num: Long, _denom: Long) extends Ordered[Ratio] {
 
   val (n, d) = {
     val gcd = Ratio.gcd(_num.abs, _denom.abs)
-    val sign = if (_num < 0l ^ _denom < 0l) -1 else 1
+    val sign = if (_num < 0L ^ _denom < 0L) -1 else 1
     val _num2 = sign * _num.abs / gcd
     val _denom2 = _denom.abs / gcd
     assert(_num * _denom2 == _num2 * _denom)
@@ -66,9 +66,9 @@ class Ratio(_num: Long, _denom: Long) extends Ordered[Ratio] {
   def ==(r : Ratio) : Boolean = num * r.denom == r.num * denom
   def !=(r : Ratio) : Boolean = num * r.denom != r.num * denom
   override def compare(r : Ratio) : Int =  (num * r.denom) compare (r.num * denom)
-  override def toString = num + "/" + denom
+  override def toString = s"$num/$denom"
 
-  def isWhole = denom == 1l
+  def isWhole = denom == 1L
   def toLong = { assert(isWhole); num }
 }
 

@@ -66,14 +66,14 @@ class PrefixingWriter(prefix: String, base: OutputStream) extends Writer {
   val out = new OutputStreamWriter(base)
   var needPrefix = true
 
-  private def ifPrefixNeeded {
+  private def ifPrefixNeeded: Unit = {
     if (needPrefix) {
       out.write(prefix)
       needPrefix = false
     }
   }
 
-  def write(cbuf: Array[Char], off: Int, len: Int) {
+  def write(cbuf: Array[Char], off: Int, len: Int): Unit = {
     val max = math.min(cbuf.size - off, off + len)
     var start = off
     while (start < max) {
@@ -93,11 +93,11 @@ class PrefixingWriter(prefix: String, base: OutputStream) extends Writer {
     }
   }
 
-  def close {
+  def close: Unit = {
     out.close
   }
 
-  def flush {
+  def flush: Unit = {
     out.flush
   }
 
