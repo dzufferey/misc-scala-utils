@@ -1,8 +1,8 @@
 package dzufferey.utils
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
-class SysCmdSuite extends FunSuite {
+class SysCmdSuite extends AnyFunSuite {
      
   test("echo test") {
     val (code, echo, err) = SysCmd(Array("echo", "-n", "test"), "")
