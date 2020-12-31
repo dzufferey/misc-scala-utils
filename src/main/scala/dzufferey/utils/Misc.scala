@@ -13,7 +13,7 @@ object Misc {
       "<pre>\n" + dot + "\n</pre>"
     }
   }
-  
+
   def graphvizToSvgFdp(dot: String): String = {
     val (code, out, err) = SysCmd(Array("fdp", "-Tsvg", "-GK=1"), dot)
     if (code == 0) {
@@ -23,7 +23,7 @@ object Misc {
       "<pre>\n" + dot + "\n</pre>"
     }
   }
-  
+
   def quote(str: String) =  "\"" + str.replaceAll("\"", "\\\\\"") + "\""
 
   def quoteIfFancy(str: String) = if (str matches ".*(\"|\\$|#).*") quote(str) else str

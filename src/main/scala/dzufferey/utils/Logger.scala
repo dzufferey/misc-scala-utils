@@ -20,7 +20,7 @@ object LogLevel {
 }
 
 import LogLevel._
-  
+
 /** Simple logger that outputs to stdout. */
 object Logger {
 
@@ -56,7 +56,7 @@ object Logger {
     case Info     => Debug
     case Debug    => Debug
   }
-  
+
   private def decreaseLevel(l: Level): Level = l match {
     case Critical => Critical
     case Error    => Critical
@@ -82,7 +82,7 @@ object Logger {
    * @param content The content of the message (evaluated only if needed).
    */
   def apply(relatedTo: String, lvl: Level, content: String): Unit = macro LoggerMacros.string
-  
+
   def apply(relatedTo: String, lvl: Level, content: java.io.BufferedWriter => Unit): Unit = macro LoggerMacros.writer
 
   /** Log a message and throw an exception with the content. */
@@ -101,11 +101,13 @@ class LoggerMacros(val c: Context) {
     val tree = if (isEnabled) {
         q"""
         if (dzufferey.utils.Logger($relatedTo, $lvl)) {
-          val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": " 
-          val indented = dzufferey.utils.Misc.indent(prefix, $content)
+          val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": "
+          val writer = new java.io.BufferedWriter(new dzufferey.utils.PrefixingWriter(prefix, scala.Console.out))
           dzufferey.utils.Logger.lock.lock
           try {
-            scala.Console.println(indented)
+            writer.write($content)
+            writer.append('\n')
+            writer.flush()
           } finally {
             dzufferey.utils.Logger.lock.unlock
           }
@@ -119,12 +121,12 @@ class LoggerMacros(val c: Context) {
     val tree = if (isEnabled) {
         q"""
         if (dzufferey.utils.Logger($relatedTo, $lvl)) {
-          val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": " 
+          val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": "
           val writer = new java.io.BufferedWriter(new dzufferey.utils.PrefixingWriter(prefix, scala.Console.out))
           dzufferey.utils.Logger.lock.lock
           try {
             $content(writer)
-            writer.flush
+            writer.flush()
           } finally {
             dzufferey.utils.Logger.lock.unlock
           }
