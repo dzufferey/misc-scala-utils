@@ -1,29 +1,19 @@
 # misc-scala-utils
 
+![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-green.svg)
+
 A collection of scala utils methods that I use across mutliple projects, but does not fit a single category
-
-
-## Compiling
-
-This project requires java 6 and can be build it using [sbt](http://www.scala-sbt.org/).
-To install sbt follow the instructions at [http://www.scala-sbt.org/release/tutorial/Setup.html](http://www.scala-sbt.org/release/tutorial/Setup.html).
-
-Then, in a console, execute:
-```
-$ sbt
-> compile
-```
 
 ## Using it
 
 To use it in your projects your need to add the following two lines in your `build.sbt`:
 ```scala
-resolvers +=  "dzufferey maven repo" at "https://github.com/dzufferey/my_mvn_repo/raw/master/repository"
+resolvers += "jitpack" at "https://jitpack.io"
 
-libraryDependencies += "io.github.dzufferey" %% "misc-scala-utils" % "0.1-SNAPSHOT"
+libraryDependencies += "com.github.dzufferey" %% "misc-scala-utils" % "1.0.0"
 ```
 
-The last line is requried if you want to use it in some other project.
+The first line is requried if you want to use it in some other project.
 If you want to use it locally do not add the `resolvers` line but instead run `sbt publishLocal`.
 
 ## Disabling Logger at compile time
@@ -33,3 +23,14 @@ If this is not enough (benchmarking), you can even remove them by setting the ri
 
 Run sbt using `sbt -DdisableLogging=true` and then recompile your project.
 The logging should be gone.
+
+## Compiling
+
+This project requires java 8 and can be build it using [sbt](http://www.scala-sbt.org/).
+
+Then, in a console, execute:
+```
+$ sbt
+> compile
+```
+

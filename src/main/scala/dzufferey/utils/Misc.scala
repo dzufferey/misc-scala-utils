@@ -106,7 +106,7 @@ object Misc {
       s > 0
     }
 
-    def next = {
+    def next() = {
       val builder = Vector.newBuilder[A]
       builder.sizeHint(s)
       var i = 0
@@ -115,7 +115,7 @@ object Misc {
         i += 1
       }
       increment
-      builder.result
+      builder.result()
     }
 
   }

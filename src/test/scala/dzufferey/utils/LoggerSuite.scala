@@ -1,11 +1,11 @@
 package dzufferey.utils
 
-import org.scalatest._
+import org.scalatest.funsuite.AnyFunSuite
 
 import LogLevel._
 
-class LoggerSuite extends FunSuite {
-     
+class LoggerSuite extends AnyFunSuite {
+
   test("lazy evaluation of message with priority") {
     Logger.setMinPriority(Debug)
     intercept[java.lang.RuntimeException] {

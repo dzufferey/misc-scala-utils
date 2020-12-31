@@ -140,7 +140,7 @@ class LoggerMacros(val c: Context) {
         {
           val c = $content
           dzufferey.utils.Logger($relatedTo, $lvl, c)
-          scala.Console.flush
+          scala.Console.flush()
           sys.error(c)
         }
         """
