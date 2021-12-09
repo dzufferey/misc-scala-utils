@@ -12,6 +12,8 @@ class LoggerSuite extends AnyFunSuite {
       Logger("LoggerSuite", Debug, sys.error("should happen"): String)
     }
     Logger.setMinPriority(Critical)
+    assert(Logger("LoggerSuite", Critical))
+    assert(!Logger("LoggerSuite", Error))
     Logger("LoggerSuite", Error, sys.error("should not happen"): String)
     Logger.reset
     intercept[java.lang.RuntimeException] {

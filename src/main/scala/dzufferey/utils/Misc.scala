@@ -1,7 +1,5 @@
 package dzufferey.utils
 
-import LogLevel._
-
 object Misc {
 
   def graphvizToSvgDot(dot: String): String = {

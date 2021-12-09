@@ -1,6 +1,6 @@
 # misc-scala-utils
 
-![Version 1.0.0](https://img.shields.io/badge/version-1.0.0-green.svg)
+![Version 1.1.0](https://img.shields.io/badge/version-1.1.0-green.svg)
 
 A collection of scala utils methods that I use across mutliple projects, but does not fit a single category
 
@@ -10,7 +10,7 @@ To use it in your projects your need to add the following two lines in your `bui
 ```scala
 resolvers += "jitpack" at "https://jitpack.io"
 
-libraryDependencies += "com.github.dzufferey" %% "misc-scala-utils" % "1.0.0"
+libraryDependencies += "com.github.dzufferey" %% "misc-scala-utils" % "1.1.0"
 ```
 
 The first line is requried if you want to use it in some other project.
@@ -26,7 +26,7 @@ The logging should be gone.
 
 ## Compiling
 
-This project requires java 8 and can be build it using [sbt](http://www.scala-sbt.org/).
+This project requires java 11 and can be build it using [sbt](http://www.scala-sbt.org/).
 
 Then, in a console, execute:
 ```

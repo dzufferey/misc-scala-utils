@@ -1,13 +1,12 @@
 package dzufferey.utils
 
 import scala.sys.process._
-import LogLevel._
 
 /** executing command as children process */
 object SysCmd {
 
   type ExecResult = (Int, String, String)
-  
+
   //TODO add an option for timeout
   def apply(cmds: Array[String], input: Option[String], addToEnv: (String,String)*): ExecResult = {
     val process = Process(cmds, None, addToEnv:_*)
@@ -27,14 +26,14 @@ object SysCmd {
     val exitCode = withInput ! processLogger
     (exitCode, bufferOut.toString, bufferErr.toString)
   }
-  
+
   def apply(cmds: Array[String], input: String, addToEnv: (String,String)*): ExecResult =
     apply(cmds, Some(input), addToEnv: _*)
 
   def apply(cmds: Array[String], addToEnv: (String,String)*): ExecResult =
     apply(cmds, None, addToEnv: _*)
-  
-  
+
+
   def execWithoutOutput(cmds: Array[String], input: Option[String], addToEnv: (String,String)*): Int = {
     val process = Process(cmds, None, addToEnv:_*)
     val withInput = input match {
@@ -42,9 +41,9 @@ object SysCmd {
       case None => process
     }
     //Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
-    withInput.! 
+    withInput.!
   }
-  
+
   def execRedirectToOutput(cmds: Array[String], input: Option[String], addToEnv: (String,String)*): Int = {
     val process = Process(cmds, None, addToEnv:_*)
     val withInput = input match {
@@ -57,7 +56,7 @@ object SysCmd {
     //Logger("Utils", Info, "Executing "+ cmds.mkString(""," ",""))
     withInput ! processLogger
   }
-  
+
   def execOutputAndLog(cmds: Array[String], input: Option[String], addToEnv: (String,String)*): ExecResult = {
     val process = Process(cmds, None, addToEnv:_*)
     val withInput = input match {

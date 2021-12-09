@@ -1,29 +1,9 @@
 package dzufferey.utils
 
-import scala.language.experimental.macros
-import scala.reflect.macros.blackbox.Context
-
-//logging facility (i.e. syslog alike)
-
-object LogLevel {
-    sealed abstract class Level(msg: String, prio: Int, col: String) {
-      def message = msg
-      def priority = prio
-      def color = col
-    }
-    case object Critical extends Level("Critical", 32, Console.RED)
-    case object Error    extends Level("Error",    16, Console.RED)
-    case object Warning  extends Level("Warning",  8,  Console.YELLOW)
-    case object Notice   extends Level("Notice",   4,  Console.BLUE)
-    case object Info     extends Level("Info",     2,  Console.RESET)
-    case object Debug    extends Level("Debug",    1,  Console.RESET)
-}
-
+import scala.quoted.{Quotes, Expr}
 import LogLevel._
 
-/** Simple logger that outputs to stdout. */
 object Logger {
-
 
   val lock = new java.util.concurrent.locks.ReentrantLock
 
@@ -71,35 +51,34 @@ object Logger {
   def lessVerbose = setMinPriority( decreaseLevel(getMinPriority))
 
   /** Should be dispayed ? */
-  def apply(relatedTo: String, lvl: Level): Boolean =
+  inline def apply(relatedTo: String, lvl: Level): Boolean =
     lvl.priority >= minPriority && !disallowed(relatedTo)
 
   //The evaluation of the content should *NOT* print. It can cause deadlocks.
+
+  //FIXME with scala3, I to call content by name but the macros should take care of that ?!?
 
   /** Log a message to the console.
    * @param relatedTo The package/file/class from where this message comes from.
    * @param lvl The priority of the message.
    * @param content The content of the message (evaluated only if needed).
    */
-  def apply(relatedTo: String, lvl: Level, content: String): Unit = macro LoggerMacros.string
+  inline def apply(relatedTo: String, lvl: Level, content: => String): Unit = ${ LoggerMacros.string('relatedTo, 'lvl, 'content) }
 
-  def apply(relatedTo: String, lvl: Level, content: java.io.BufferedWriter => Unit): Unit = macro LoggerMacros.writer
+  inline def apply(relatedTo: String, lvl: Level, content: java.io.BufferedWriter => Unit): Unit = ${ LoggerMacros.writer('relatedTo, 'lvl, 'content) }
 
   /** Log a message and throw an exception with the content. */
-  def logAndThrow(relatedTo: String, lvl: Level, content: String): Nothing = macro LoggerMacros.logAndThrow
+  inline def logAndThrow(relatedTo: String, lvl: Level, content: => String): Nothing = ${ LoggerMacros.logAndThrow('relatedTo, 'lvl, 'content) }
 
-  def assert(cond: Boolean, relatedTo: String, content: String): Unit = macro LoggerMacros.assert
+  inline def assert(cond: Boolean, relatedTo: String, content: => String): Unit = ${ LoggerMacros.assert('cond, 'relatedTo, 'content) }
 
 }
 
-class LoggerMacros(val c: Context) {
-  import c.universe._
+object LoggerMacros {
 
-  val isEnabled = System.getProperty("disableLogging") != "true"
-
-  def string(relatedTo: c.Expr[String], lvl: c.Expr[Level], content: c.Expr[String]): c.Expr[Unit] = {
-    val tree = if (isEnabled) {
-        q"""
+  def string(relatedTo: Expr[String], lvl: Expr[Level], content: Expr[String])(using Quotes): Expr[Unit] = {
+    if (System.getProperty("disableLogging") != "true") {
+      '{
         if (dzufferey.utils.Logger($relatedTo, $lvl)) {
           val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": "
           val writer = new java.io.BufferedWriter(new dzufferey.utils.PrefixingWriter(prefix, scala.Console.out))
@@ -112,14 +91,15 @@ class LoggerMacros(val c: Context) {
             dzufferey.utils.Logger.lock.unlock
           }
         }
-        """
-      } else q"()"
-    c.Expr[Unit](tree)
+      }
+    } else {
+      '{ () }
+    }
   }
 
-  def writer(relatedTo: c.Expr[String], lvl: c.Expr[Level], content: c.Expr[java.io.BufferedWriter => Unit]): c.Expr[Unit] = {
-    val tree = if (isEnabled) {
-        q"""
+  def writer(relatedTo: Expr[String], lvl: Expr[Level], content: Expr[java.io.BufferedWriter => Unit])(using Quotes): Expr[Unit] = {
+    if (System.getProperty("disableLogging") != "true") {
+      '{
         if (dzufferey.utils.Logger($relatedTo, $lvl)) {
           val prefix = "[" + $lvl.color + $lvl.message + scala.Console.RESET + "]" + " @ " + $relatedTo + ": "
           val writer = new java.io.BufferedWriter(new dzufferey.utils.PrefixingWriter(prefix, scala.Console.out))
@@ -131,38 +111,37 @@ class LoggerMacros(val c: Context) {
             dzufferey.utils.Logger.lock.unlock
           }
         }
-        """
-      } else q"()"
-    c.Expr[Unit](tree)
+      }
+    } else {
+      '{ () }
+    }
   }
 
-  def logAndThrow(relatedTo: c.Expr[String], lvl: c.Expr[Level], content: c.Expr[String]): c.Expr[Nothing] = {
-    val tree = if (isEnabled) {
-        q"""
+  def logAndThrow(relatedTo: Expr[String], lvl: Expr[Level], content: Expr[String])(using Quotes): Expr[Nothing] = {
+    if (System.getProperty("disableLogging") != "true") {
+      '{
         {
           val c = $content
           dzufferey.utils.Logger($relatedTo, $lvl, c)
           scala.Console.flush()
           sys.error(c)
         }
-        """
-      } else {
-        q"""
-        sys.error($content)
-        """
       }
-    c.Expr[Nothing](tree)
+    } else {
+      '{ sys.error($content) }
+    }
   }
 
-  def assert(cond: c.Expr[Boolean], relatedTo: c.Expr[String], content: c.Expr[String]): c.Expr[Unit] = {
-    val tree = if (isEnabled) {
-        q"""
+  def assert(cond: Expr[Boolean], relatedTo: Expr[String], content: Expr[String])(using Quotes): Expr[Unit] = {
+    if (System.getProperty("disableLogging") != "true") {
+      '{
         if (!$cond) {
           dzufferey.utils.Logger.logAndThrow($relatedTo, dzufferey.utils.LogLevel.Error, $content)
         }
-        """
-      } else q"()"
-    c.Expr[Unit](tree)
+      }
+    } else {
+      '{ () }
+    }
   }
 
 }
