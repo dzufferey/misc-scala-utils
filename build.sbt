@@ -2,14 +2,14 @@ name := "misc-scala-utils"
 
 organization := "com.github.dzufferey"
 
-version := "1.1.0"
+version := "1.1.1-SNAPSHOT"
 
-scalaVersion := "3.1.0"
+scalaVersion := "3.3.3"
 
-crossScalaVersions := Seq("2.13.7", "3.1.0")
+crossScalaVersions := Seq("2.13.14", "3.3.3")
 
 libraryDependencies ++=  Seq(
-    "org.scalatest" %% "scalatest" % "3.2.10" % "test"
+    "org.scalatest" %% "scalatest" % "3.2.19" % "test"
 )
 
 // needed for scala 2 macros

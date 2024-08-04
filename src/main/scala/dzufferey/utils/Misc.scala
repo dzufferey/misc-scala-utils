@@ -132,9 +132,12 @@ object Misc {
 
   def commonPrefix(x: String, y: String): Int = {
     val bound = math.min(x.length, y.length)
-    for(i <- 0 until bound) {
+    var i = 0
+    while (i < bound) {
       if (x(i) != y(i)) {
         return i
+      } else {
+        i += 1
       }
     }
     bound
